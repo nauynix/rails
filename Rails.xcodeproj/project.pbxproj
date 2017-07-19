@@ -19,6 +19,7 @@
 		2C80F9FC1E57371D0027F5E4 /* NotificationCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C80F9FB1E57371D0027F5E4 /* NotificationCenter.framework */; };
 		2C80F9FF1E57371D0027F5E4 /* TodayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C80F9FE1E57371D0027F5E4 /* TodayViewController.swift */; };
 		2C80FA061E57371D0027F5E4 /* Rails widget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 2C80F9F91E57371D0027F5E4 /* Rails widget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2C96FB411F1F84F10053C190 /* LaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C96FB401F1F84F10053C190 /* LaunchViewController.swift */; };
 		2C9911EE1E740A7F00A3DA73 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C9911D11E740A7F00A3DA73 /* Assets.xcassets */; };
 		2C9911EF1E740A7F00A3DA73 /* BackgroundTaskManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9911D31E740A7F00A3DA73 /* BackgroundTaskManager.m */; };
 		2C9911F01E740A7F00A3DA73 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C9911D51E740A7F00A3DA73 /* Main.storyboard */; };
@@ -119,6 +120,7 @@
 		2C80F9FB1E57371D0027F5E4 /* NotificationCenter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NotificationCenter.framework; path = System/Library/Frameworks/NotificationCenter.framework; sourceTree = SDKROOT; };
 		2C80F9FE1E57371D0027F5E4 /* TodayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewController.swift; sourceTree = "<group>"; };
 		2C80FA031E57371D0027F5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2C96FB401F1F84F10053C190 /* LaunchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchViewController.swift; sourceTree = "<group>"; };
 		2C9911D11E740A7F00A3DA73 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Rails/Assets.xcassets; sourceTree = "<group>"; };
 		2C9911D21E740A7F00A3DA73 /* BackgroundTaskManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BackgroundTaskManager.h; sourceTree = "<group>"; };
 		2C9911D31E740A7F00A3DA73 /* BackgroundTaskManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BackgroundTaskManager.m; sourceTree = "<group>"; };
@@ -236,6 +238,7 @@
 				2CC7FE511EAA428900E4E5CB /* CustomHeaderView.swift */,
 				2C80F9D71E5736040027F5E4 /* NotificationHandler.swift */,
 				2CC7FE4D1EA9D47700E4E5CB /* WidgetTableViewController.swift */,
+				2C96FB401F1F84F10053C190 /* LaunchViewController.swift */,
 				2C0268D61E6EB57B00546491 /* Main.storyboard */,
 				2CA1F0C21EB0394F00463C87 /* SettingsTableViewController.swift */,
 				2C80F9E11E5736040027F5E4 /* Info.plist */,
@@ -626,6 +629,7 @@
 				2C80F9D81E5736040027F5E4 /* NotificationHandler.swift in Sources */,
 				2C80F9D61E5736040027F5E4 /* AppDelegate.swift in Sources */,
 				2C9911F91E740A7F00A3DA73 /* LocationTracker.m in Sources */,
+				2C96FB411F1F84F10053C190 /* LaunchViewController.swift in Sources */,
 				2C9911FA1E740A7F00A3DA73 /* LocationViewController.m in Sources */,
 				2C04BAF91E9F5D06001A7F33 /* AnalysisController.swift in Sources */,
 				2C9911EF1E740A7F00A3DA73 /* BackgroundTaskManager.m in Sources */,

@@ -43,11 +43,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             locationTracker.updateLocationToServer()
         }
         
+        //let navigationBarAppearace = UINavigationBar.appearance()
+        
+        //Aesthetic
+        /*navigationBarAppearace.barTintColor = UIColor(red:1, green:0.584, blue:0, alpha:1.0)
+        navigationBarAppearace.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.white]
+        UIApplication.shared.statusBarStyle = .lightContent*/
+        
         // FOR TESTING OF WIDGET ONLY
         /*
         defaults?.set(["BBC", "Facebook", "Instagram", "Quora", "Reddit", "Whatsapp", "Youtube", "Others"], forKey: "selectedAppsString")
         defaults?.set(imageArray: [UIImage(named: "bbc")!, UIImage(named: "facebook")!, UIImage(named: "instagram")!, UIImage(named: "quora")!, UIImage(named: "reddit")!, UIImage(named: "whatsapp")!, UIImage(named: "youtube")!, UIImage(named: "others")!], forKey: "selectedAppsImage")
         defaults?.set(["bbcnewsapp://", "fb://", "instagram://", "quora://", "reddit://", "whatsapp://", "youtube://"], forKey: "selectedAppsURL")*/
+        /*
+        self.window = UIWindow(frame: UIScreen.main.bounds)
+        let storyBoard = UIStoryboard(name: "Main", bundle: nil)
+        var vc:ViewController
+        
+        //vc = storyBoard.instantiateViewController(withIdentifier: "")
+        vc = storyBoard.instantiateInitialViewController()! as! ViewController
+        self.window?.rootViewController = vc
+        self.window?.makeKeyAndVisible()*/
         
         return true
     }

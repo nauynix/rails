@@ -1,0 +1,26 @@
+PODS:
+  - Charts (3.0.2):
+    - Charts/Core (= 3.0.2)
+  - Charts/Core (3.0.2)
+  - FAQView (0.4.2)
+  - paper-onboarding (2.0.1)
+  - PermissionScope (1.1.1)
+  - TTGSnackbar (1.5.2)
+
+DEPENDENCIES:
+  - Charts
+  - FAQView
+  - paper-onboarding (~> 2.0.1)
+  - PermissionScope
+  - TTGSnackbar
+
+SPEC CHECKSUMS:
+  Charts: 236d6ccdd0ce6feae151d89e829a7397381a21fd
+  FAQView: 6339a7dde94c7fe766cdcb352cd75e7a1ff57d31
+  paper-onboarding: a8e001214d9ce9decf78e160b3823f396dbd51ac
+  PermissionScope: a30c16e015779ba27c97c124e7539e27b5829de2
+  TTGSnackbar: ca69045c72188fef27f575581052d72aff15abe2
+
+PODFILE CHECKSUM: 1a91c46b3e7d87cfb30c2944a041c10c01a83b5c
+
+COCOAPODS: 1.2.1

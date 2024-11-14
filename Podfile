@@ -10,6 +10,10 @@ target 'Rails' do
   #pod 'KDIntroView'
   #pod "BWWalkthrough"
   pod 'paper-onboarding', '~> 2.0.1'
+  pod 'PermissionScope'
+  pod 'TTGSnackbar'
+  pod 'FAQView'
+  pod 'Charts'
 
   target 'RailsTests' do
     inherit! :search_paths

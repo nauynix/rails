@@ -21,6 +21,17 @@ class WidgetTableViewController: UITableViewController {
         super.viewDidLoad()
         self.tableView.isEditing = true
         defaults?.removeObject(forKey: "selectedAppsString")
+        defaults?.synchronize()
+        /*
+        // Translucent status bar
+        navigationController?.navigationBar.isHidden = true
+        let statusBarView = UIView(frame: CGRect(x:0, y:0, width:view.frame.size.width, height: UIApplication.shared.statusBarFrame.height))
+        let blurEffect = UIBlurEffect(style: .extraLight) // Set any style you want(.light or .dark) to achieve different effect.
+        let blurEffectView = UIVisualEffectView(effect: blurEffect)
+        blurEffectView.frame = statusBarView.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        statusBarView.addSubview(blurEffectView)
+        navigationController?.view.addSubview(statusBarView)*/
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -250,6 +261,7 @@ class WidgetTableViewController: UITableViewController {
             defaults?.set(imageData, forKey: "image\(i)")
         }
         defaults?.set(selectedImages.count, forKey: "numberOfImages")
+        defaults?.synchronize()
     }
 }
 /*

@@ -8,13 +8,18 @@
 
 import UIKit
 import UserNotifications
+import TTGSnackbar
+import PermissionScope
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    var wakeTime : Date = Date()        // when did our application wake up most recently?
+    var notificationHandler:ViewController?
+    var locationTracker:LocationTracker?
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        
+        print("did finish launching with options")
         // Override point for customization after application launch.
         //UIApplication.shared.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
         // Initialising the defaults
@@ -30,19 +35,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if defaults?.double(forKey: "loggedGoal") == nil{
             defaults?.set(0.8, forKey: "loggedGoal")
         }
+        defaults?.synchronize()
         
-        // Start 'location' tracking but really just a way to run the app in the background
-        // Make and store a copy of ViewController
-        let viewController = ViewController()
-        viewController.sendNotifications(timeIntervalInSeconds: 0)
-        let locationTracker:LocationTracker = LocationTracker(params: viewController)
-        locationTracker.startLocationTracking()
-        //Send the best location to server every 60 seconds
-        //You may adjust the time interval depends on the need of your app.
-        var _ = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { (Timer) in
-            locationTracker.updateLocationToServer()
+        // Onboarding
+        window = UIWindow(frame: UIScreen.main.bounds)
+        
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        var initialViewController = sb.instantiateViewController(withIdentifier: "Onboarding")
+        
+        //Uncomment this to show tutorial everytime
+        //defaults?.set(false, forKey: "onboardingComplete")
+        
+        if (defaults?.bool(forKey: "onboardingComplete"))!{
+            initialViewController = sb.instantiateViewController(withIdentifier: "Mainapp")
         }
         
+        window?.rootViewController = initialViewController
+        window?.makeKeyAndVisible()
+        // Prompt the user to allow permissions
+        let pscope = PermissionScope()
+        if (defaults?.bool(forKey: "onboardingComplete"))!{
+            if pscope.statusLocationAlways() == PermissionStatus.authorized && pscope.statusNotifications() == PermissionStatus.authorized{ // Everything is authorized
+                notificationHandler = ViewController()
+                locationTracker = LocationTracker(params: notificationHandler)
+                // Start notifications
+                UNUserNotificationCenter.current().delegate = notificationHandler
+                // Start 'location' tracking but really just a way to run the app in the background
+                locationTracker?.startLocationTracking()
+            }
+            else{
+                // Request them to manage permissions
+                let snackbar = TTGSnackbar(message: "Please allow all permissions in settings for the app to work", duration: .middle)
+                snackbar.show()
+            }
+        }
+
         //let navigationBarAppearace = UINavigationBar.appearance()
         
         //Aesthetic
@@ -55,16 +82,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         defaults?.set(["BBC", "Facebook", "Instagram", "Quora", "Reddit", "Whatsapp", "Youtube", "Others"], forKey: "selectedAppsString")
         defaults?.set(imageArray: [UIImage(named: "bbc")!, UIImage(named: "facebook")!, UIImage(named: "instagram")!, UIImage(named: "quora")!, UIImage(named: "reddit")!, UIImage(named: "whatsapp")!, UIImage(named: "youtube")!, UIImage(named: "others")!], forKey: "selectedAppsImage")
         defaults?.set(["bbcnewsapp://", "fb://", "instagram://", "quora://", "reddit://", "whatsapp://", "youtube://"], forKey: "selectedAppsURL")*/
-        /*
-        self.window = UIWindow(frame: UIScreen.main.bounds)
-        let storyBoard = UIStoryboard(name: "Main", bundle: nil)
-        var vc:ViewController
-        
-        //vc = storyBoard.instantiateViewController(withIdentifier: "")
-        vc = storyBoard.instantiateInitialViewController()! as! ViewController
-        self.window?.rootViewController = vc
-        self.window?.makeKeyAndVisible()*/
-        
         return true
     }
     
@@ -80,6 +97,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+        // time stamp the entering of foreground so we can tell how we got here
+        wakeTime = Date()
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -88,6 +107,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        
+        // ensure the userInfo dictionary has the data you expect
+        print("***hello***")
+        if let type = userInfo["type"] as? String, type == "status" {
+            // IF the wakeTime is less than 1/10 of a second, then we got here by tapping a notification
+            print("***whatsup?***")
+            if application.applicationState != UIApplicationState.background && Date().timeIntervalSince(wakeTime) < 0.1 {
+                // User Tap on notification Started the App
+                let snackbar = TTGSnackbar(message: "Try swipping down on the notifications!", duration: .short)
+                snackbar.show()
+            }
+            else {
+                // DO stuff here if you ONLY want it to happen when the push arrives
+            }
+            completionHandler(.newData)
+        }
+        else {
+            completionHandler(.noData)
+        }
     }
 
     /*

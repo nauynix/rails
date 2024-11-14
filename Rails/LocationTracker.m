@@ -68,6 +68,7 @@ ViewController *viewController;
 -(id)initWithParams:(ViewController *)params
 {
     if(self = [super init]) {
+        NSLog(@"Starting location tracking");
         //Get the share model and also initialize myLocationArray
         self.shareModel = [LocationShareModel sharedModel];
         self.shareModel.myLocationArray = [[NSMutableArray alloc]init];
@@ -97,7 +98,7 @@ ViewController *viewController;
 
 - (void) restartLocationUpdates
 {
-    NSLog(@"restartLocationUpdates");
+    //NSLog(@"restartLocationUpdates");
     
     if (self.shareModel.timer) {
         [self.shareModel.timer invalidate];
@@ -112,7 +113,8 @@ ViewController *viewController;
     if(IS_OS_8_OR_LATER) {
         [locationManager requestAlwaysAuthorization];
     }
-    [locationManager startUpdatingLocation];
+    //[locationManager startUpdatingLocation];
+    [self startLocationTracking];
 }
 
 
@@ -129,7 +131,7 @@ ViewController *viewController;
         if(authorizationStatus == kCLAuthorizationStatusDenied || authorizationStatus == kCLAuthorizationStatusRestricted){
             NSLog(@"authorizationStatus failed");
         } else {
-            NSLog(@"authorizationStatus authorized");
+            //NSLog(@"authorizationStatus authorized");
             CLLocationManager *locationManager = [LocationTracker sharedLocationManager];
             locationManager.delegate = self;
             locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
@@ -219,8 +221,8 @@ ViewController *viewController;
     self.shareModel.bgTask = [BackgroundTaskManager sharedBackgroundTaskManager];
     [self.shareModel.bgTask beginNewBackgroundTask];
     
-    //Restart the locationMaanger after one year
-    self.shareModel.timer = [NSTimer scheduledTimerWithTimeInterval:31540000 target:self
+    //Restart the locationManager after 7 seconds
+    self.shareModel.timer = [NSTimer scheduledTimerWithTimeInterval:4 target:self
                                                            selector:@selector(restartLocationUpdates)
                                                            userInfo:nil
                                                             repeats:NO];

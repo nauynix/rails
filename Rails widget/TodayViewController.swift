@@ -37,7 +37,7 @@ class TodayViewController: UIViewController, NCWidgetProviding{
     static private var resetButtonFinalX: CGFloat = 0
     static private var timeLeftLabelFinalX: CGFloat = 0
     static private var buttonSelected:Int = 1
-    private var minimumAllowedMovements = 5
+    private var minimumAllowedMovements = 500
     private var buttonState = 0 // 0 is nothing, 1 is began, 2 is ended, 3 is cancelled
     
     private let timeInteverals = [2, 5, 10, 20, 60]
@@ -85,28 +85,35 @@ class TodayViewController: UIViewController, NCWidgetProviding{
     
     func buttonDown(){
         var timeIndex = 0
-        var index = 0
+        var microIndex = 0
         TodayViewController.timeSetInMinutes = 2
         TodayViewController.timeLeftLabel.text = "\(TodayViewController.timeSetInMinutes) minutes"
         TodayViewController.timerForSettingTimer = Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true, block: { (Timer) in
             // Animate the progress bar and get the final time set
-            if index < 30 { // User needs to hold for one second
+            if microIndex < 30 { // User needs to hold for one second
                 //self.progressView.setProgress(0.0016 * Float(index) + Float(timeIndex) * 0.25, animated: true)
-                TodayViewController.progressView.setProgress(0.0345 * Float(index), animated: false)
-                index+=1
+                // 0.0345 = 1 / 30
+                TodayViewController.progressView.setProgress(0.0345 * Float(microIndex), animated: false)
+                microIndex+=1
             }
             else if timeIndex < 4{ // Change to the next timer countdown
                 timeIndex += 1
-                index = 0
+                microIndex = 0
                 TodayViewController.timeSetInMinutes = self.timeInteverals[timeIndex]
                 TodayViewController.timeLeftLabel.text = "\(TodayViewController.timeSetInMinutes) minutes"
                 //self.progressView.setProgress(Float(timeIndex) * 0.25, animated: true)
                 TodayViewController.progressView.setProgress(0, animated: false)
             }
-            else{ // Maximum timer reached, do nothing
+            else if timeIndex == 4{ // Maximum timer reached, show 60 minutes for 1 second
                 TodayViewController.timeSetInMinutes = self.timeInteverals[timeIndex]
                 TodayViewController.timeLeftLabel.text = "\(TodayViewController.timeSetInMinutes) minutes"
-                //self.progressView.setProgress(Float(timeIndex) * 0.25, animated: true)
+                TodayViewController.progressView.setProgress(1, animated: false)
+                timeIndex += 1
+                microIndex = 0
+            }
+            else{ // Prompt the user to press reset
+                TodayViewController.timeSetInMinutes = self.timeInteverals[timeIndex - 1]
+                TodayViewController.timeLeftLabel.text = "\(TodayViewController.timeSetInMinutes) minutes / Reset?"
                 TodayViewController.progressView.setProgress(1, animated: false)
             }
         })
@@ -184,6 +191,7 @@ class TodayViewController: UIViewController, NCWidgetProviding{
         }
         defaults?.set(totalTimeLoggedPerDay, forKey: "totalTimeLoggedPerDay")
         
+        defaults?.synchronize()
         timeCountDown()
     }
     
@@ -239,6 +247,7 @@ class TodayViewController: UIViewController, NCWidgetProviding{
         self.defaults?.removeObject(forKey: "url")
         self.defaults?.removeObject(forKey: "timeSetInMinutes")
         self.defaults?.removeObject(forKey: "timerStartedDate")
+        defaults?.synchronize()
         TodayViewController.timeSetInMinutes = 0
         TodayViewController.timerForSettingTimer?.invalidate()
         TodayViewController.timerForSettingTimer = nil
@@ -653,7 +662,7 @@ class TodayViewController: UIViewController, NCWidgetProviding{
     
     func animateBegin(labelX: Int, labelButton: UIButton, resetX: Int, resetButton: UIButton, progressX: Int, progressButton: UIButton, finalLabelX: CGFloat, finalResetX: CGFloat, finalProgressX: CGFloat, selectedButton: UIButton, selectedLabel: UILabel){
         buttonState = 1
-        minimumAllowedMovements = 5
+        minimumAllowedMovements = 500
         // Because stack.spacing does not work and must be called after viewDidLoad
         stackSpacing = button4.layer.frame.origin.x - button3.layer.frame.origin.x - appSize
         createLabel(x: labelX, y: Int(button1.frame.origin.y), width: Int(2 * appSize + stackSpacing), height: Int(appSize))
@@ -705,6 +714,7 @@ class TodayViewController: UIViewController, NCWidgetProviding{
         }
         else{ // Any slight movement in the finger holding it down will trigger this and it is very sensitive. As such, we put a buffer of 5 to ensure that this only triggers when the user swipes out of the button
             minimumAllowedMovements -= 1
+            print(minimumAllowedMovements)
             if minimumAllowedMovements == 0 && buttonState != 3{
                 print("cancel")
                 buttonState = 3

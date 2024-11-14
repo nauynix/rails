@@ -14,14 +14,17 @@ class ViewController: UIViewController{// I know it says its a ViewController bu
     let defaults = UserDefaults.init(suiteName: "group.nauynix.rails")
     
     //MARK: Properties
-    var isGrantedNotificationAccess:Bool = false
     static private var previousUnlockedPhoneDate = Date()
     static private var previousLoggedDate = Date() // The date that the user has started the timer
     static private var deviceIsLocked = false
     static private var totalTimeUsedPerDay: [String: Int] = [:]
     static private var totalTimeLoggedPerDay: [String: Int] = [:] // The uptime when the widget timer is running ie. the uptime that is logged and the user is aware that he is using the phone
-    static private var first = true
     static private var secondsSincePhoneWasOn = 0 // Use the update method to count the seconds since the phone was turned on. When it reaches 30, the unlocked notification is called to notify the user to set a timer.
+    
+    static var firstTime = true
+    static var secondTime = true
+    static var thirdTime = true
+    static var timePassedSinceEndOfTimer = 0 // The app will keep on bugging the user to stop using his phone once his usage is up every 30/60/90 seconds pass. This is to keep track of the next time the app should send the notification.
     /*
      private lazy var locationManager: CLLocationManager = {
      let manager = CLLocationManager()
@@ -57,23 +60,57 @@ class ViewController: UIViewController{// I know it says its a ViewController bu
     
     @objc
     func update(){
-        UNUserNotificationCenter.current()
-            .removePendingNotificationRequests(withIdentifiers:
-                ["request", "unlocked"])
+        /*ViewController.timeSinceProgram+=1
+        print(ViewController.timeSinceProgram)*/
+        //UNUserNotificationCenter.current()
+        //    .removePendingNotificationRequests(withIdentifiers:
+        //        ["request", "unlocked"])
+        print("****************")
+        print("Time set in minutes: \(defaults?.integer(forKey: "timeSetInMinutes"))")
+        print("Time started date: \(defaults?.object(forKey: "timerStartedDate"))")
+        print("timePassedSinceEndOfTimer: \(ViewController.timePassedSinceEndOfTimer)")
+        print("seconds since phone was on: \(ViewController.secondsSincePhoneWasOn)")
+        print("****************")
+        
+        // Send notification to stop using phone
         if defaults?.integer(forKey: "timeSetInMinutes") != nil && defaults?.object(forKey: "timerStartedDate") != nil{
             let timeLeftInSeconds = (defaults?.integer(forKey: "timeSetInMinutes"))! * 60 + Int(round(((defaults?.object(forKey: "timerStartedDate") as? Date)?.timeIntervalSinceNow)!))
-            print("Time left in seconds: \(timeLeftInSeconds)")
-            if (defaults?.bool(forKey: "notificationIsNotSent"))! && timeLeftInSeconds == 1{
+            //print("Time left in seconds: \(timeLeftInSeconds)")
+            if (defaults?.bool(forKey: "notificationIsNotSent"))!{
                 ViewController.previousLoggedDate = Date()
-                sendNotifications(timeIntervalInSeconds: timeLeftInSeconds)
+                sendNotifications(timeIntervalInSeconds: timeLeftInSeconds, message: "It is time to stop using your phone")
                 defaults?.set(false, forKey: "notificationIsNotSent")
+                defaults?.synchronize()
+                ViewController.firstTime = false
+                ViewController.secondTime = false
+                ViewController.thirdTime = false
+            }
+            ViewController.timePassedSinceEndOfTimer = timeLeftInSeconds
+        }
+        // Keep on bugging the user to stop using his phone 30, 60 and 90 seconds after the first notification to stop using the phone is sent.
+        ViewController.timePassedSinceEndOfTimer -= 1
+        if ViewController.deviceIsLocked == false{
+            if ViewController.timePassedSinceEndOfTimer < -30 && ViewController.firstTime == false{
+                sendNotifications(timeIntervalInSeconds: 1, message: "Here is a reminder again to stop using your phone")
+                ViewController.firstTime = true
+            }
+            if ViewController.timePassedSinceEndOfTimer < -60 && ViewController.secondTime == false{
+                sendNotifications(timeIntervalInSeconds: 1, message: "It is really time to stop using your phone")
+                ViewController.secondTime = true
+            }
+            if ViewController.timePassedSinceEndOfTimer < -90 && ViewController.thirdTime == false{
+                sendNotifications(timeIntervalInSeconds: 1, message: "This is the final reminder to stop using your phone")
+                ViewController.thirdTime = true
             }
         }
+        // Send notification to set a timer
         ViewController.secondsSincePhoneWasOn += 1
-        if ViewController.secondsSincePhoneWasOn == 30 {
+        
+        if ViewController.secondsSincePhoneWasOn == 30 && defaults?.object(forKey: "timerStartedDate") == nil && (defaults?.bool(forKey: "sendReminders"))!{
             setUnlockedNotification()
             ViewController.secondsSincePhoneWasOn = -31540000
         }
+        defaults?.synchronize()
     }
     
     
@@ -86,6 +123,10 @@ class ViewController: UIViewController{// I know it says its a ViewController bu
                 .removePendingNotificationRequests(withIdentifiers:
                     ["request", "unlocked"])
             ViewController.secondsSincePhoneWasOn = -31540000
+            
+            ViewController.firstTime = true
+            ViewController.secondTime = true
+            ViewController.thirdTime = true
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "MM-dd-yyyy"
@@ -169,31 +210,21 @@ class ViewController: UIViewController{// I know it says its a ViewController bu
             print("UPTIME SO FAR: \(String(describing: ViewController.totalTimeUsedPerDay[dateFormatter.string(from: Date())]))")
             print("LOGGED UPTIME SO FAR: \(String(describing: ViewController.totalTimeLoggedPerDay[dateFormatter.string(from: Date())]))")
             print("***********************")
-            
             defaults?.set(0, forKey: "timeSetInMinutes")
-            print(defaults?.integer(forKey: "timeSetInMinutes"))
+            defaults?.synchronize()
         }
     }
     
-    func sendNotifications(timeIntervalInSeconds: Int){
-        print("******************\n\(isGrantedNotificationAccess)\n*******************")
-        
-        if (ViewController.first){ // First time this is run
-            UNUserNotificationCenter.current().delegate = self
-            ViewController.first = false
-            let center = UNUserNotificationCenter.current()
-            center.requestAuthorization(options: [.alert, .sound]) { (granted, error) in
-                self.isGrantedNotificationAccess = granted
-            }
-        }
-        
+    func sendNotifications(timeIntervalInSeconds: Int, message: String){
         let center = UNUserNotificationCenter.current()
         center.getNotificationSettings { (settings) in
             if settings.authorizationStatus == .authorized && timeIntervalInSeconds > 0{ // timeIntervalInSeconds = 0 during initialisation
                 // Notifications allowed
                 //Set the content of the notification
+                
+                print("******************\nSending notifications\n*******************")
                 let content = UNMutableNotificationContent()
-                let messageSubtitle = "It is time to stop using your phone"
+                let messageSubtitle = message
                 content.body = messageSubtitle
                 
                 //let responseAction = UNTextInputNotificationAction(identifier: "response", title: "Reply", options: [], textInputButtonTitle: "Let's go!", textInputPlaceholder: "Reason")
@@ -217,18 +248,9 @@ class ViewController: UIViewController{// I know it says its a ViewController bu
                 
                 print("******************\nSent notification\n*******************")
                 
-                var trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(0.5), repeats: false)
-                var request = UNNotificationRequest(identifier: "request", content: content, trigger: trigger)
-                UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)/*
-                trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(60), repeats: false)
-                request = UNNotificationRequest(identifier: "request", content: content, trigger: trigger)
+                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(timeIntervalInSeconds), repeats: false)
+                let request = UNNotificationRequest(identifier: "request", content: content, trigger: trigger)
                 UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
-                trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(90), repeats: false)
-                request = UNNotificationRequest(identifier: "request", content: content, trigger: trigger)
-                UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
-                trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(120), repeats: false)
-                request = UNNotificationRequest(identifier: "request", content: content, trigger: trigger)
-                UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)*/
             }
         }
     }
@@ -240,7 +262,7 @@ class ViewController: UIViewController{// I know it says its a ViewController bu
                 // Notifications allowed
                 //Set the content of the notification
                 let content = UNMutableNotificationContent()
-                let messageSubtitle = "Set a timer to monitor your phone usage"
+                let messageSubtitle = "Swipe down to set a timer to monitor your phone usage"
                 content.body = messageSubtitle
                 
                 //let responseAction = UNTextInputNotificationAction(identifier: "response", title: "Reply", options: [], textInputButtonTitle: "Let's go!", textInputPlaceholder: "Reason")
@@ -272,25 +294,28 @@ extension ViewController:UNUserNotificationCenterDelegate{
         case "2min":
             print("Set timer to two minutes")
             defaults?.set(2, forKey: "timeSetInMinutes")
-            sendNotifications(timeIntervalInSeconds: 120)
+            sendNotifications(timeIntervalInSeconds: 120, message: "It is time to stop using your phone")
         case "5min":
             print("Set timer to five minutes")
             defaults?.set(5, forKey: "timeSetInMinutes")
-            sendNotifications(timeIntervalInSeconds: 300)
+            sendNotifications(timeIntervalInSeconds: 300, message: "It is time to stop using your phone")
         case "10min":
             print("Set timer to ten minutes")
             defaults?.set(10, forKey: "timeSetInMinutes")
-            sendNotifications(timeIntervalInSeconds: 600)
+            sendNotifications(timeIntervalInSeconds: 600, message: "It is time to stop using your phone")
         case "20min":
             print("Set timer to twenty minutes")
             defaults?.set(20, forKey: "timeSetInMinutes")
-            sendNotifications(timeIntervalInSeconds: 1200)
+            sendNotifications(timeIntervalInSeconds: 1200, message: "It is time to stop using your phone")
         default:
             break
         }
         defaults?.set(Date(), forKey: "timerStartedDate")
-        print(defaults?.integer(forKey: "timeSetInMinutes"))
+        defaults?.synchronize()
         completionHandler()
+        ViewController.firstTime = false
+        ViewController.secondTime = false
+        ViewController.thirdTime = false
     }
 
 }
